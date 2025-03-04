@@ -53,15 +53,17 @@ jobs:
         run: |
           mkdir linux-lts66-repo && cd linux-lts66-repo
 
-          find $GITHUB_WORKSPACE/hello -type f -name *.pkg.tar.zst -exec mv {} . \;        
+          find hello -type f -name *.pkg.tar.zst -exec mv {} . \;        
           repo-add linux-lts66.db.tar.zst *.pkg.tar.zst
 
       - name: Upload repository as artifact
+        #if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: linux-lts66-repo/
 
       - name: Deploy to GitHub Pages
+        #if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION }}
         uses: actions/deploy-pages@v4
 
       - name: Update submodules
