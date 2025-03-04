@@ -11,19 +11,15 @@ jobs:
     container: archlinux:latest
 
     steps:
-      - name: Install dependencies
+      - name: Install dependencies and clone repository
         run: |
           pacman -Syu --noconfirm base-devel git
 
-      - name: Checkout repository and submodules
-        uses: actions/checkout@v4
-        with:
-          submodules: true
+          git config --global --add safe.directory $(pwd)
+          git clone --recursive https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} .
 
       - name: Export current and last built version
         run: |
-          cd $GITHUB_WORKSPACE
-
           LAST_BUILT_VERSION=$(grep '^pkgver=' hello/PKGBUILD | cut -d'=' -f2)
           git submodule update --remote
           CURRENT_VERSION=$(grep '^pkgver=' hello/PKGBUILD | cut -d'=' -f2)
@@ -37,7 +33,7 @@ jobs:
       - name: Create dedicated user for build
         #if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION }}
         run: |
-          cd $GITHUB_WORKSPACE/hello
+          cd hello
 
           useradd -m builder
           echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
@@ -50,8 +46,7 @@ jobs:
       - name: Build kernel packages
         #if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION }}
         run: |
-          cd $GITHUB_WORKSPACE/hello
-          sudo -u builder MAKEFLAGS="-j$(nproc)" makepkg -s --noconfirm
+          cd hello && sudo -u builder MAKEFLAGS="-j$(nproc)" makepkg -s --noconfirm
 
       - name: Create user repository
         #if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION }}
@@ -72,8 +67,6 @@ jobs:
       - name: Update submodules
         #if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION }}
         run: |
-          cd $GITHUB_WORKSPACE
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
