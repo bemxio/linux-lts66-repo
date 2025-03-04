@@ -51,9 +51,10 @@ jobs:
       - name: Create user repository
         #if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION }}
         run: |
-          mkdir linux-lts66-repo && cd linux-lts66-repo
+          mkdir linux-lts66-repo
+          cd linux-lts66-repo
 
-          find hello -type f -name *.pkg.tar.zst -exec mv {} . \;        
+          find ../hello -type f -name *.pkg.tar.zst -exec mv {} . \;        
           repo-add linux-lts66.db.tar.zst *.pkg.tar.zst
 
       - name: Upload repository as artifact
