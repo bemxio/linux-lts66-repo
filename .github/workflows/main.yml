@@ -43,15 +43,18 @@ jobs:
           echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
 
           echo "${{ secrets.GPG_PRIVATE_KEY_ENCRYPTED }}" | base64 -d > private.key.gpg
-          su builder -c "gpg --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}" --decrypt private.key.gpg | gpg --batch --import"
-          su builder -c "gpg --batch --locate-keys torvalds@kernel.org gregkh@kernel.org"
+          gpg --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}" --decrypt private.key.gpg | \
+            sudo -u builder gpg --batch --import
+
+          sudo -u builder gpg --batch --locate-keys torvalds@kernel.org
+          sudo -u builder gpg --batch --locate-keys gregkh@kernel.org
 
           chown -R builder .
 
       - name: Build kernel packages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
-          cd linux-lts66 && su builder -c "MAKEFLAGS="-j$(nproc)" makepkg --syncdeps --sign --noconfirm"
+          cd linux-lts66 && sudo -u builder MAKEFLAGS="-j$(nproc)" makepkg --syncdeps --sign --noconfirm
 
       - name: Create repository for packages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
