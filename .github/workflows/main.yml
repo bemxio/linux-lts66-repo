@@ -58,6 +58,8 @@ jobs:
           mkdir linux-lts66-repo
           cd linux-lts66-repo
 
+          cp ../*.html .
+
           find ../linux-lts66 -type f -name *.pkg.tar.zst -exec mv {} . \;
           repo-add linux-lts66.db.tar.zst *.pkg.tar.zst
 
