@@ -15,7 +15,7 @@ jobs:
       id-token: write
 
     steps:
-      - name: Install dependencies and clone repository
+      - name: Install dependencies and clone Git repository
         run: |
           pacman -Syu --noconfirm base-devel git
 
@@ -57,7 +57,7 @@ jobs:
           sudo -u builder PACKAGER="bemxio <bemxiov@protonmail.com>" MAKEFLAGS="-j$(nproc)" \
             makepkg --dir hello --noconfirm --syncdeps
 
-      - name: Create repository for packages
+      - name: Sign packages and create package repository
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
           mkdir linux-lts66-repo
@@ -68,7 +68,7 @@ jobs:
 
           for package in *.pkg.tar.zst; do
             sudo -u builder gpg --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output "${package}.sig" --detach-sign "${package}"
-          fi
+          done
 
           sudo -u builder repo-add linux-lts66.db.tar.zst *.pkg.tar.zst
           sudo -u builder gpg --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output linux-lts66.db.tar.zst.sig --detach-sign linux-lts66.db.tar.zst
