@@ -69,11 +69,11 @@ jobs:
           cp ../index.html .
 
           for package in *.pkg.tar.zst; do
-            sudo -u builder gpg --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output "${package}.sig" --detach-sign "${package}"
+            sudo -u builder gpg --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output "${package}.sig" --detach-sign "${package}"
           done
 
           sudo -u builder repo-add linux-lts66.db.tar.zst *.pkg.tar.zst
-          sudo -u builder gpg --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output linux-lts66.db.tar.zst.sig --detach-sign linux-lts66.db.tar.zst
+          sudo -u builder gpg --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output linux-lts66.db.tar.zst.sig --detach-sign linux-lts66.db.tar.zst
 
       - name: Upload repository as artifact
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
