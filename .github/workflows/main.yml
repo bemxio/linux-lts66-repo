@@ -78,7 +78,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Update submodules
-        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
+        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
