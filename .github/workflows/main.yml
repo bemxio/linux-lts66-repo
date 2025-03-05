@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  PACKAGE: hello
+  PACKAGE: linux-lts66
 
 jobs:
   main:
@@ -57,7 +57,7 @@ jobs:
 
           chown -R builder .
 
-      - name: Build kernel packages
+      - name: Build packages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
           sudo -u builder PACKAGER="bemxio <bemxiov@protonmail.com>" MAKEFLAGS="-j$(nproc)" \
