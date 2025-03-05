@@ -64,7 +64,7 @@ jobs:
           cd hello
 
           echo "${{ secrets.GPG_PASSPHRASE }}" | \
-            sudo -u builder makepkg --pinentry-mode loopback --noconfirm --syncdeps --sign
+            sudo -u builder makepkg --noconfirm --syncdeps --sign
 
       - name: Create repository for packages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
@@ -76,7 +76,7 @@ jobs:
 
           find ../hello -type f -name *.pkg.tar.zst -exec mv {} . \;
           echo "${{ secrets.GPG_PASSPHRASE }}" | \
-            sudo -u builder repo-add --pinentry-mode loopback --sign linux-lts66.db.tar.zst *.pkg.tar.zst
+            sudo -u builder repo-add --sign linux-lts66.db.tar.zst *.pkg.tar.zst
 
       - name: Upload repository as artifact
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
