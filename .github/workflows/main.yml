@@ -64,7 +64,7 @@ jobs:
           cd linux-lts66-repo
 
           cp ../hello/*.pkg.tar.zst .
-          cp ../*.{html,css,js} .
+          cp ../index.html .
 
           for package in *.pkg.tar.zst; do
             sudo -u builder gpg --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output "${package}.sig" --detach-sign "${package}"
