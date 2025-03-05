@@ -24,9 +24,9 @@ jobs:
 
       - name: Export current and last built version
         run: |
-          LAST_BUILT_VERSION=$(grep "^pkgver=" linux-lts66/PKGBUILD | cut -d"=" -f2)
+          LAST_BUILT_VERSION=$(grep "^pkgver=" hello/PKGBUILD | cut -d"=" -f2)
           git submodule update --remote
-          CURRENT_VERSION=$(grep "^pkgver=" linux-lts66/PKGBUILD | cut -d"=" -f2)
+          CURRENT_VERSION=$(grep "^pkgver=" hello/PKGBUILD | cut -d"=" -f2)
 
           echo "Last built version: $LAST_BUILT_VERSION"
           echo "Current version: $CURRENT_VERSION"
@@ -37,7 +37,7 @@ jobs:
       - name: Create dedicated user for build
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
-          cd linux-lts66
+          cd hello
 
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
@@ -54,8 +54,9 @@ jobs:
       - name: Build kernel packages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
-          cd linux-lts66
+          cd hello
 
+          echo "PACKAGER="bemxio <bemxiov@protonmail.com>"" >> /home/builder/.makepkg.conf
           echo "GPGKEY="F95B3E58A1558E613975F551D6BA2CBC66075B2B"" >> /home/builder/.makepkg.conf
           echo "MAKEFLAGS="-j$(nproc)"" >> /home/builder/.makepkg.conf
 
@@ -69,7 +70,7 @@ jobs:
 
           cp ../*.html .
 
-          find ../linux-lts66 -type f -name *.pkg.tar.zst -exec mv {} . \;
+          find ../hello -type f -name *.pkg.tar.zst -exec mv {} . \;
           sudo -u builder repo-add --sign linux-lts66.db.tar.zst *.pkg.tar.zst
 
       - name: Upload repository as artifact
@@ -88,6 +89,6 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
-          git add linux-lts66
+          git add hello
           git commit -m "$CURRENT_VERSION"
           git push origin main
