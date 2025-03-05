@@ -42,15 +42,15 @@ jobs:
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/builder
 
-          echo allow-loopback-pinetry >> /home/builder/.gnupg/gpg-agent.conf
-          sudo -u builder gpg-connect-agent reloadagent /bye
-
           echo "${{ secrets.GPG_PRIVATE_KEY_ENCRYPTED }}" | base64 -d >> private.key.gpg
           gpg --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}" --decrypt private.key.gpg | \
             sudo -u builder gpg --batch --import
 
           sudo -u builder gpg --batch --locate-keys torvalds@kernel.org
           sudo -u builder gpg --batch --locate-keys gregkh@kernel.org
+
+          echo allow-loopback-pinetry >> /home/builder/.gnupg/gpg-agent.conf
+          sudo -u builder gpg-connect-agent reloadagent /bye
 
           echo "PACKAGER='bemxio <bemxiov@protonmail.com>'" >> /home/builder/.makepkg.conf
           echo "GPGKEY='F95B3E58A1558E613975F551D6BA2CBC66075B2B'" >> /home/builder/.makepkg.conf
