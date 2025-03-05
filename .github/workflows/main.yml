@@ -56,9 +56,9 @@ jobs:
         run: |
           cd hello
 
-          echo "PACKAGER="bemxio <bemxiov@protonmail.com>"" >> /home/builder/.makepkg.conf
-          echo "GPGKEY="F95B3E58A1558E613975F551D6BA2CBC66075B2B"" >> /home/builder/.makepkg.conf
-          echo "MAKEFLAGS="-j$(nproc)"" >> /home/builder/.makepkg.conf
+          echo "PACKAGER='bemxio <bemxiov@protonmail.com>'" >> /home/builder/.makepkg.conf
+          echo "GPGKEY='F95B3E58A1558E613975F551D6BA2CBC66075B2B'" >> /home/builder/.makepkg.conf
+          echo "MAKEFLAGS='-j$(nproc)'" >> /home/builder/.makepkg.conf
 
           sudo -u builder makepkg --syncdeps --sign --noconfirm
 
