@@ -1,9 +1,12 @@
-name: Build new Linux 6.6 LTS release
+name: Build new package release
 
 on:
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
+
+env:
+  PACKAGE: hello
 
 jobs:
   main:
@@ -24,9 +27,9 @@ jobs:
 
       - name: Export current and last built version
         run: |
-          LAST_BUILT_VERSION=$(grep "^pkgver=" hello/PKGBUILD | cut -d"=" -f2)
+          LAST_BUILT_VERSION=$(grep "^pkgver=" "$PACKAGE/PKGBUILD" | cut -d"=" -f2)
           git submodule update --remote
-          CURRENT_VERSION=$(grep "^pkgver=" hello/PKGBUILD | cut -d"=" -f2)
+          CURRENT_VERSION=$(grep "^pkgver=" "$PACKAGE/PKGBUILD" | cut -d"=" -f2)
 
           echo "Last built version: $LAST_BUILT_VERSION"
           echo "Current version: $CURRENT_VERSION"
@@ -37,7 +40,7 @@ jobs:
       - name: Create dedicated user for build and signage
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
-          cd hello
+          cd "$PACKAGE"
 
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/builder
@@ -58,31 +61,31 @@ jobs:
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
           sudo -u builder PACKAGER="bemxio <bemxiov@protonmail.com>" MAKEFLAGS="-j$(nproc)" \
-            makepkg --dir hello --noconfirm --syncdeps
+            makepkg --dir "$PACKAGE" --noconfirm --syncdeps
 
       - name: Sign packages and create package repository
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
-          mkdir linux-lts66-repo
-          cd linux-lts66-repo
-
+          mkdir "$PACKAGE-repo" && cd "$PACKAGE-repo"
           chown -R builder .
 
-          cp ../hello/*.pkg.tar.zst .
+          cp ../"$PACKAGE"/*.pkg.tar.zst .
           cp ../index.html .
 
-          for package in *.pkg.tar.zst; do
-            sudo -u builder gpg --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output "${package}.sig" --detach-sign "${package}"
+          for file in *.pkg.tar.zst; do
+            sudo -u builder gpg --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" \
+              --output "${file}.sig" --detach-sign "${file}"
           done
 
-          sudo -u builder repo-add linux-lts66.db.tar.zst *.pkg.tar.zst
-          sudo -u builder gpg --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output linux-lts66.db.tar.zst.sig --detach-sign linux-lts66.db.tar.zst
+          sudo -u builder repo-add "$PACKAGE.db.tar.zst" *.pkg.tar.zst
+          sudo -u builder gpg --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" \
+            --output "$PACKAGE.db.tar.zst.sig" --detach-sign "$PACKAGE.db.tar.zst"
 
       - name: Upload repository as artifact
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-pages-artifact@v3
         with:
-          path: linux-lts66-repo/
+          path: ${{ env.PACKAGE }}-repo/
 
       - name: Deploy to GitHub Pages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
@@ -94,6 +97,6 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
-          git add hello
+          git add "$PACKAGE"
           git commit -m "$CURRENT_VERSION"
           git push origin main
