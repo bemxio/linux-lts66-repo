@@ -2,7 +2,7 @@ name: Build new Linux 6.6 LTS release
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
           echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
 
       - name: Create dedicated user for build
-        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == "workflow_dispatch" }}
+        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
           cd linux-lts66
 
@@ -52,12 +52,12 @@ jobs:
           chown -R builder .
 
       - name: Build kernel packages
-        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == "workflow_dispatch" }}
+        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
           cd linux-lts66 && sudo -u builder MAKEFLAGS="-j$(nproc)" makepkg --syncdeps --sign --noconfirm
 
       - name: Create repository for packages
-        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == "workflow_dispatch" }}
+        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
           mkdir linux-lts66-repo
           cd linux-lts66-repo
@@ -68,17 +68,17 @@ jobs:
           repo-add --sign linux-lts66.db.tar.zst *.pkg.tar.zst
 
       - name: Upload repository as artifact
-        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == "workflow_dispatch" }}
+        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: linux-lts66-repo/
 
       - name: Deploy to GitHub Pages
-        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == "workflow_dispatch" }}
+        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         uses: actions/deploy-pages@v4
 
       - name: Update submodules
-        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == "workflow_dispatch" }}
+        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
