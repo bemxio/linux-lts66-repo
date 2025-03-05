@@ -49,23 +49,13 @@ jobs:
           sudo -u builder gpg --batch --locate-keys torvalds@kernel.org
           sudo -u builder gpg --batch --locate-keys gregkh@kernel.org
 
-          echo allow-loopback-pinetry >> /home/builder/.gnupg/gpg-agent.conf
-          echo "pinentry-mode loopback" >> /home/builder/.gnupg/gpg.conf
-          sudo -u builder gpg-connect-agent reloadagent /bye
-
-          echo "PACKAGER='bemxio <bemxiov@protonmail.com>'" >> /home/builder/.makepkg.conf
-          echo "GPGKEY='F95B3E58A1558E613975F551D6BA2CBC66075B2B'" >> /home/builder/.makepkg.conf
-          echo "MAKEFLAGS='-j$(nproc)'" >> /home/builder/.makepkg.conf
-
           chown -R builder .
 
       - name: Build kernel packages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
-          cd hello
-
-          echo "${{ secrets.GPG_PASSPHRASE }}" | \
-            sudo -u builder makepkg --noconfirm --syncdeps --sign
+          sudo -u builder PACKAGER="bemxio <bemxiov@protonmail.com>" MAKEFLAGS="-j$(nproc)" \
+            makepkg --dir hello --noconfirm --syncdeps
 
       - name: Create repository for packages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
@@ -73,11 +63,15 @@ jobs:
           mkdir linux-lts66-repo
           cd linux-lts66-repo
 
+          cp ../hello/*.pkg.tar.zst .
           cp ../*.{html,css,js} .
 
-          find ../hello -type f -name *.pkg.tar.zst -exec mv {} . \;
-          echo "${{ secrets.GPG_PASSPHRASE }}" | \
-            sudo -u builder repo-add --sign linux-lts66.db.tar.zst *.pkg.tar.zst
+          for package in *.pkg.tar.zst; do
+            sudo -u builder gpg --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output "${package}.sig" --detach-sign "${package}"
+          fi
+
+          sudo -u builder repo-add linux-lts66.db.tar.zst *.pkg.tar.zst
+          sudo -u builder gpg --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output linux-lts66.db.tar.zst.sig --detach-sign linux-lts66.db.tar.zst
 
       - name: Upload repository as artifact
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
