@@ -50,6 +50,7 @@ jobs:
           sudo -u builder gpg --batch --locate-keys gregkh@kernel.org
 
           echo allow-loopback-pinetry >> /home/builder/.gnupg/gpg-agent.conf
+          echo "pinentry-mode loopback" >> /home/builder/.gnupg/gpg.conf
           sudo -u builder gpg-connect-agent reloadagent /bye
 
           echo "PACKAGER='bemxio <bemxiov@protonmail.com>'" >> /home/builder/.makepkg.conf
