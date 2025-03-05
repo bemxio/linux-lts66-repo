@@ -1,3 +1,6 @@
 [submodule "linux-lts66"]
 	path = linux-lts66
 	url = https://aur.archlinux.org/linux-lts66.git
+[submodule "hello"]
+	path = hello
+	url = https://aur.archlinux.org/hello.git
