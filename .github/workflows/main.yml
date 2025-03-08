@@ -61,7 +61,7 @@ jobs:
       - name: Build packages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
-          sudo -E -u builder MAKEFLAGS="-j$(nproc)" makepkg --dir "$PACKAGE" --noconfirm --syncdeps
+          sudo -u builder PACKAGER="$PACKAGER" MAKEFLAGS="-j$(nproc)" makepkg --dir "$PACKAGE" --noconfirm --syncdeps
 
       - name: Sign packages and create package repository
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
