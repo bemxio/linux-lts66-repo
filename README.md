@@ -17,8 +17,7 @@ Server = https://linux-lts66.bemxio.xyz/
 
 After that, simply update your system, and proceed to install the kernel!
 ```bash
-pacman -Syu
-pacman -S linux-lts66 linux-lts66-headers
+pacman -Syu linux-lts66 linux-lts66-headers
 ```
 
 ## License
