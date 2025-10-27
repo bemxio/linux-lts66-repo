@@ -12,7 +12,10 @@ env:
 jobs:
   main:
     runs-on: ubuntu-latest
-    container: archlinux:latest
+    container:
+      image: archlinux:latest
+      volumes:
+        - /:/__host_root
 
     permissions:
       contents: write
@@ -58,6 +61,13 @@ jobs:
           sudo -u builder gpg-connect-agent reloadagent /bye
 
           chown -R builder .
+
+      - name: Free up space
+        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
+        run: |
+          df -h
+          rm -fr /__t/* /__host_root/{usr/share/dotnet,usr/local/lib/android,opt/ghc,opt/hostedtoolcache/CodeQL}
+          df -h
 
       - name: Build packages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
