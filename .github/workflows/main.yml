@@ -66,13 +66,8 @@ jobs:
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
         run: |
           df -h
-          rm -fr /__t/* /__host_root/{usr/share/dotnet,usr/local/lib/android,opt/ghc,opt/hostedtoolcache/CodeQL}
+          rm -rf /__t/* /__host_root/{usr/share/dotnet,usr/local/lib/android,opt/ghc,opt/hostedtoolcache/CodeQL}
           df -h
-
-      - name: Prepare dependencies
-        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
-        run: |
-          pacman -U --noconfirm https://archive.archlinux.org/packages/p/python-docutils/python-docutils-1%3A0.21.2-3-any.pkg.tar.zst
 
       - name: Build packages
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
