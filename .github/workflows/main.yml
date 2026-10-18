@@ -47,7 +47,10 @@ jobs:
 
       - name: Free up disk space
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
-        uses: insightsengineering/disk-space-reclaimer@v1
+        run: |
+          df -h /
+          rm -rf /__t/* /__host_root/{usr/share/dotnet,usr/local/lib/android,opt/ghc,opt/hostedtoolcache/CodeQL}
+          df -h /
 
       - name: Create dedicated user for build and signage
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
