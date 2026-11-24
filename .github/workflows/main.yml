@@ -13,7 +13,7 @@ env:
   PACKAGER: 'bemxio <bemxiov@protonmail.com>'
 
 jobs:
-  main:
+  build:
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
@@ -101,10 +101,6 @@ jobs:
         with:
           path: ${{ env.PACKAGE }}-repo/
 
-      - name: Deploy to GitHub Pages
-        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
-        uses: actions/deploy-pages@v5
-
       - name: Update submodules
         if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION }}
         run: |
@@ -114,3 +110,21 @@ jobs:
           git add "$PACKAGE"
           git commit -m "$CURRENT_VERSION"
           git push origin main
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    permissions:
+      id-token: write
+      pages: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        if: ${{ env.CURRENT_VERSION != env.LAST_BUILT_VERSION || github.event_name == 'workflow_dispatch' }}
+        uses: actions/deploy-pages@v5
